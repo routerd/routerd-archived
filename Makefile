@@ -53,3 +53,9 @@ verify-boilerplate:
 	@go run hack/boilerplate/boilerplate.go \
 		-boilerplate-dir hack/boilerplate/ \
 		-verbose
+.PHONY: verify-boilerplate
+
+pre-commit-install:
+	@echo "installing pre-commit hooks using https://pre-commit.com/"
+	@pre-commit install
+.PHONY: pre-commit-install
