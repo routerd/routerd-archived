@@ -14,20 +14,20 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package scanner
+package internal
 
 import (
-	"io"
-	"io/ioutil"
 	"unicode/utf8"
-
-	"routerd.net/routerd/internal/systemd/token"
 )
 
-type ErrorHandler func(pos token.Position, msg string)
+// An ErrorHandler may be provided to Scanner.Init.
+type ErrorHandler func(pos Position, msg string)
 
+// Scanner implements a scanner for systemd unit files.
+// It takes a []byte as source which can then be tokenized
+// through repeated calls to the Scan method.
 type Scanner struct {
-	pos token.Position
+	pos Position
 	src []byte
 	err ErrorHandler
 
@@ -39,9 +39,8 @@ type Scanner struct {
 	ErrorCount int // number of errors encountered
 }
 
-func (s *Scanner) Init(reader io.Reader) error {
-	var err error
-	s.src, err = ioutil.ReadAll(reader)
+func (s *Scanner) Init(src []byte, err ErrorHandler) {
+	s.src = src
 	s.pos.Line = 1
 	s.pos.Column = 1
 
@@ -51,7 +50,6 @@ func (s *Scanner) Init(reader io.Reader) error {
 	s.ErrorCount = 0
 
 	s.next()
-	return err
 }
 
 func (s *Scanner) error(msg string) {
@@ -92,15 +90,26 @@ func (s *Scanner) next() {
 	s.rdOffset += w
 }
 
-func (s *Scanner) scanIdentifier() string {
+func (s *Scanner) scanString() string {
 	offs := s.offset - 1
-	for !token.IsDelimiter(s.ch) && s.ch != -1 {
+	for !IsDelimiter(s.ch) && s.ch != -1 {
 		s.next()
 	}
 	return string(s.src[offs:s.offset])
 }
 
-func (s *Scanner) Scan() (pos token.Position, tok token.Token, lit string) {
+func (s *Scanner) scanSection() string {
+	offs := s.offset - 1
+	for s.ch != ']' && s.ch != '\n' && s.ch != -1 {
+		s.next()
+	}
+	if s.ch == ']' {
+		s.next()
+	}
+	return string(s.src[offs:s.offset])
+}
+
+func (s *Scanner) Scan() (pos Position, tok Token, lit string) {
 	pos = s.pos
 
 	ch := s.ch
@@ -108,29 +117,27 @@ func (s *Scanner) Scan() (pos token.Position, tok token.Token, lit string) {
 	switch ch {
 
 	case -1:
-		tok = token.EOF
+		tok = EOF
 
 	case '\n':
 		s.pos.Line++
 		s.pos.Column = 0
-		tok = token.NEWLINE
+		tok = NEWLINE
 
 	case '[':
-		tok = token.LBRACK
-
-	case ']':
-		tok = token.RBRACK
+		tok = SECTION
+		lit = s.scanSection()
 
 	case '#', ';':
-		tok = token.COMMENT
-		lit = s.scanIdentifier()
+		tok = COMMENT
+		lit = s.scanString()
 
 	case '=':
-		tok = token.ASSIGN
+		tok = ASSIGN
 
 	default:
-		tok = token.IDENT
-		lit = s.scanIdentifier()
+		tok = STRING
+		lit = s.scanString()
 	}
 	return
 }

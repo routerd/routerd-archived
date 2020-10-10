@@ -14,15 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package token defines constants representing the lexical tokens of a systemd ini file.
-package token
+package internal
 
 import (
 	"fmt"
 	"strconv"
 )
 
-// Token is the type for lexical tokens of a systemd ini file.
+// Token is the type for lexical tokens of a systemd configuration file.
 type Token int
 
 // List of Tokens.
@@ -32,14 +31,13 @@ const (
 	EOF
 	COMMENT
 
-	// Values
-	IDENT
+	// Values - Essentially everything that does not fit elsewhere.
+	SECTION
+	STRING
 
 	// Operators and delimiters
 	NEWLINE // \n
 	ASSIGN  // =
-	LBRACK  // [
-	RBRACK  // ]
 )
 
 var tokens = [...]string{
@@ -49,17 +47,12 @@ var tokens = [...]string{
 	COMMENT: "COMMENT",
 
 	// Values
-	IDENT: "IDENT",
+	SECTION: "SECTION",
+	STRING:  "STRING",
 
 	// Operators and delimiters
 	NEWLINE: "NEWLINE",
 	ASSIGN:  "=",
-	LBRACK:  "[",
-	RBRACK:  "]",
-}
-
-func IsDelimiter(ch rune) bool {
-	return ch == '\n' || ch == '=' || ch == '[' || ch == ']'
 }
 
 func (tok Token) String() string {
@@ -71,6 +64,10 @@ func (tok Token) String() string {
 		s = "token(" + strconv.Itoa(int(tok)) + ")"
 	}
 	return s
+}
+
+func IsDelimiter(ch rune) bool {
+	return ch == '\n' || ch == '='
 }
 
 type Position struct {
