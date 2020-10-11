@@ -22,11 +22,13 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+const lineNo = ``
+
 const example1 = `[Network]
 Description= test1 \
-# in the middle
-test2 \
-test3
+	# in the middle
+	test2 \
+	test3
 # address 1
 Address=10.1.10.9/24
 # address 2
@@ -34,31 +36,31 @@ Address=10.1.10.11/24
 `
 
 var example1tokens = []tokenEntry{
-	{tok: SECTION, lit: "[Network]"},
-	{tok: NEWLINE},
-	{tok: STRING, lit: "Description"},
-	{tok: ASSIGN}, // =
-	{tok: STRING, lit: " test1 \\"},
-	{tok: NEWLINE},
-	{tok: COMMENT, lit: "# in the middle"},
-	{tok: NEWLINE},
-	{tok: STRING, lit: "test2 \\"},
-	{tok: NEWLINE},
-	{tok: STRING, lit: "test3"},
-	{tok: NEWLINE},
-	{tok: COMMENT, lit: "# address 1"},
-	{tok: NEWLINE},
-	{tok: STRING, lit: "Address"},
-	{tok: ASSIGN}, // =
-	{tok: STRING, lit: "10.1.10.9/24"},
-	{tok: NEWLINE},
-	{tok: COMMENT, lit: "# address 2"},
-	{tok: NEWLINE},
-	{tok: STRING, lit: "Address"},
-	{tok: ASSIGN}, // =
-	{tok: STRING, lit: "10.1.10.11/24"},
-	{tok: NEWLINE},
-	{tok: EOF},
+	{pos: Position{Line: 1, Column: 1}, tok: SECTION, lit: "[Network]"},
+	{pos: Position{Line: 1, Column: 10}, tok: NEWLINE},
+	{pos: Position{Line: 2, Column: 1}, tok: STRING, lit: "Description"},
+	{pos: Position{Line: 2, Column: 12}, tok: ASSIGN}, // =
+	{pos: Position{Line: 2, Column: 13}, tok: STRING, lit: "test1 \\"},
+	{pos: Position{Line: 2, Column: 21}, tok: NEWLINE},
+	{pos: Position{Line: 3, Column: 1}, tok: COMMENT, lit: "# in the middle"},
+	{pos: Position{Line: 3, Column: 17}, tok: NEWLINE},
+	{pos: Position{Line: 4, Column: 1}, tok: STRING, lit: "test2 \\"},
+	{pos: Position{Line: 4, Column: 9}, tok: NEWLINE},
+	{pos: Position{Line: 5, Column: 1}, tok: STRING, lit: "test3"},
+	{pos: Position{Line: 5, Column: 7}, tok: NEWLINE},
+	{pos: Position{Line: 6, Column: 1}, tok: COMMENT, lit: "# address 1"},
+	{pos: Position{Line: 6, Column: 12}, tok: NEWLINE},
+	{pos: Position{Line: 7, Column: 1}, tok: STRING, lit: "Address"},
+	{pos: Position{Line: 7, Column: 8}, tok: ASSIGN}, // =
+	{pos: Position{Line: 7, Column: 9}, tok: STRING, lit: "10.1.10.9/24"},
+	{pos: Position{Line: 7, Column: 21}, tok: NEWLINE},
+	{pos: Position{Line: 8, Column: 1}, tok: COMMENT, lit: "# address 2"},
+	{pos: Position{Line: 8, Column: 12}, tok: NEWLINE},
+	{pos: Position{Line: 9, Column: 1}, tok: STRING, lit: "Address"},
+	{pos: Position{Line: 9, Column: 8}, tok: ASSIGN}, // =
+	{pos: Position{Line: 9, Column: 9}, tok: STRING, lit: "10.1.10.11/24"},
+	{pos: Position{Line: 9, Column: 22}, tok: NEWLINE},
+	{pos: Position{Line: 9, Column: 22}, tok: EOF},
 }
 
 const example2 = `# route1000
@@ -134,20 +136,23 @@ var example3tokens = []tokenEntry{
 }
 
 type tokenEntry struct {
+	pos Position
 	tok Token
 	lit string
 }
 
 func TestScanner(t *testing.T) {
 	tests := []struct {
-		Name   string
-		Input  string
-		Tokens []tokenEntry
+		Name         string
+		Input        string
+		Tokens       []tokenEntry
+		TestPosition bool
 	}{
 		{
-			Name:   "Example 1",
-			Input:  example1,
-			Tokens: example1tokens,
+			Name:         "Example 1",
+			Input:        example1,
+			Tokens:       example1tokens,
+			TestPosition: true,
 		},
 		{
 			Name:   "Example 2",
@@ -171,11 +176,15 @@ func TestScanner(t *testing.T) {
 			tokens := []tokenEntry{}
 			for {
 				pos, tok, lit := s.Scan()
-				t.Logf("%s\t\t%s\t%q\n", pos, tok, lit)
-				tokens = append(tokens, tokenEntry{
+				t.Logf("%s\t%s\t%q\n", pos, tok, lit)
+				te := tokenEntry{
 					tok: tok,
 					lit: lit,
-				})
+				}
+				if test.TestPosition {
+					te.pos = pos
+				}
+				tokens = append(tokens, te)
 				if tok == EOF {
 					break
 				}

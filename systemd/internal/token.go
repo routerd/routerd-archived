@@ -76,6 +76,11 @@ type Position struct {
 
 func (pos *Position) IsValid() bool { return pos.Line > 0 }
 
+// String returns a string representation of the position, depending on available information.
+//
+//	line:column         valid position without file name
+//	line                valid position without file name and no column (column == 0)
+//	-                   invalid position without file name
 func (pos Position) String() string {
 	if !pos.IsValid() {
 		return "-"

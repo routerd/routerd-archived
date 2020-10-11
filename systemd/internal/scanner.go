@@ -17,6 +17,7 @@ limitations under the License.
 package internal
 
 import (
+	"unicode"
 	"unicode/utf8"
 )
 
@@ -42,7 +43,7 @@ type Scanner struct {
 func (s *Scanner) Init(src []byte, err ErrorHandler) {
 	s.src = src
 	s.pos.Line = 1
-	s.pos.Column = 1
+	s.pos.Column = 0
 
 	s.ch = ' '
 	s.offset = 0
@@ -80,6 +81,7 @@ func (s *Scanner) next() {
 	switch {
 	case r == 0:
 		s.error("illegal character NUL")
+
 	case r >= utf8.RuneSelf:
 		r, w = utf8.DecodeRune(s.src[s.rdOffset:])
 		if r == utf8.RuneError && w == 1 {
@@ -93,6 +95,14 @@ func (s *Scanner) next() {
 func (s *Scanner) scanString() string {
 	offs := s.offset - 1
 	for !IsDelimiter(s.ch) && s.ch != -1 {
+		s.next()
+	}
+	return string(s.src[offs:s.offset])
+}
+
+func (s *Scanner) scanComment() string {
+	offs := s.offset - 1
+	for s.ch != '\n' && s.ch != -1 {
 		s.next()
 	}
 	return string(s.src[offs:s.offset])
@@ -112,16 +122,15 @@ func (s *Scanner) scanSection() string {
 func (s *Scanner) Scan() (pos Position, tok Token, lit string) {
 	pos = s.pos
 
+skip:
 	ch := s.ch
 	s.next()
-	switch ch {
 
+	switch ch {
 	case -1:
 		tok = EOF
 
 	case '\n':
-		s.pos.Line++
-		s.pos.Column = 0
 		tok = NEWLINE
 
 	case '[':
@@ -130,12 +139,17 @@ func (s *Scanner) Scan() (pos Position, tok Token, lit string) {
 
 	case '#', ';':
 		tok = COMMENT
-		lit = s.scanString()
+		lit = s.scanComment()
 
 	case '=':
 		tok = ASSIGN
 
 	default:
+		if unicode.IsSpace(ch) {
+			// skip whitespace
+			goto skip
+		}
+
 		tok = STRING
 		lit = s.scanString()
 	}
