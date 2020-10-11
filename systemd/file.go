@@ -31,21 +31,3 @@ type Key struct {
 	Value   string
 	Comment string
 }
-
-// func (f *File) Section(section string) Section {
-// 	for _, s := range f.Sections {
-// 		if s.Name == section {
-// 			return s
-// 		}
-// 	}
-// 	return Section{}
-// }
-
-// func (s *Section) Key(key string) Key {
-// 	for _, s := range f.Sections {
-// 		if s.Name == section {
-// 			return s
-// 		}
-// 	}
-// 	return Section{}
-// }

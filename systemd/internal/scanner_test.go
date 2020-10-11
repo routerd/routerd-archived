@@ -22,8 +22,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-const lineNo = ``
-
 const example1 = `[Network]
 Description= test1 \
 	# in the middle

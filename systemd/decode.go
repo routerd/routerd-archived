@@ -23,6 +23,13 @@ import (
 	"routerd.net/routerd/systemd/internal"
 )
 
+// Decode takes a systemd configuration file and returns a data container to access and manipulate it.
+func Decode(data []byte) (*File, error) {
+	var d decodeState
+	d.init(data)
+	return d.decode()
+}
+
 // decodeState stores the current state of a decode operation.
 type decodeState struct {
 	scanner internal.Scanner
@@ -43,7 +50,7 @@ func (d *decodeState) init(src []byte) *decodeState {
 	return d
 }
 
-func (d *decodeState) unmarshal() (*File, error) {
+func (d *decodeState) decode() (*File, error) {
 	for {
 		pos, tok, lit := d.scanner.Scan()
 		if tok == internal.EOF {
