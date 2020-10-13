@@ -37,7 +37,6 @@ func Marshal(v interface{}) ([]byte, error) {
 			continue
 		}
 
-		// field := rv.Elem().Field(i)
 		field := rv.Elem().Field(i)
 		sectionName := nameFromStructField(structField)
 		switch field.Type().Kind() {
@@ -67,6 +66,7 @@ func Marshal(v interface{}) ([]byte, error) {
 
 	}
 
+	// Check, if the SectionList for arbitrary sections is embedded.
 	sectionList := rv.Elem().FieldByName("SectionList")
 	if sectionList.IsValid() {
 		for i := 0; i < sectionList.Len(); i++ {
@@ -74,6 +74,7 @@ func Marshal(v interface{}) ([]byte, error) {
 		}
 	}
 
+	// Encode to bytes
 	var out bytes.Buffer
 	if err := Encode(&out, file); err != nil {
 		return nil, err
@@ -101,22 +102,14 @@ func marshalSection(section *Section, rv reflect.Value) {
 		switch structField.Type.Kind() {
 		case reflect.String:
 			key := Key{
-				Name:  keyName,
-				Value: field.String(),
+				Name:    keyName,
+				Value:   field.String(),
+				Comment: keyComment(rv, keyName),
 			}
 			if key.Value == "" {
 				continue
 			}
 
-			getComment := rv.MethodByName("GetKeyComment")
-			if getComment.IsValid() {
-				comment := getComment.Call([]reflect.Value{
-					reflect.ValueOf(keyName),
-				})
-				if len(comment) == 1 {
-					key.Comment = comment[0].String()
-				}
-			}
 			section.Keys = append(section.Keys, key)
 
 		case reflect.Slice:
@@ -130,22 +123,15 @@ func marshalSection(section *Section, rv reflect.Value) {
 				}
 
 				if i == 0 {
-					getComment := rv.MethodByName("GetKeyComment")
-					if getComment.IsValid() {
-						comment := getComment.Call([]reflect.Value{
-							reflect.ValueOf(keyName),
-						})
-						if len(comment) == 1 {
-							key.Comment = comment[0].String()
-						}
-					}
+					// Add the comment to the first Key
+					key.Comment = keyComment(rv, keyName)
 				}
-
 				section.Keys = append(section.Keys, key)
 			}
 		}
 	}
 
+	// Check if KeyList for arbitrary keys is embedded.
 	keyList := rv.Elem().FieldByName("KeyList")
 	if !keyList.IsValid() {
 		return
@@ -153,4 +139,18 @@ func marshalSection(section *Section, rv reflect.Value) {
 	for i := 0; i < keyList.Len(); i++ {
 		section.Keys = append(section.Keys, keyList.Index(i).Interface().(Key))
 	}
+}
+
+// keyComment gets the registered comment for the given key
+func keyComment(rv reflect.Value, keyName string) string {
+	getComment := rv.MethodByName("GetKeyComment")
+	if getComment.IsValid() {
+		comment := getComment.Call([]reflect.Value{
+			reflect.ValueOf(keyName),
+		})
+		if len(comment) == 1 {
+			return comment[0].String()
+		}
+	}
+	return ""
 }
