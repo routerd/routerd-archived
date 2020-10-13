@@ -44,7 +44,7 @@ type networkSection struct {
 type routeSection struct {
 	KeyList
 	Gateway     string
-	Destination string
+	Destination string `systemd:",omitempty"`
 }
 
 func TestUnmarshal(t *testing.T) {

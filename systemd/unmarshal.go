@@ -18,6 +18,7 @@ package systemd
 
 import (
 	"reflect"
+	"strings"
 )
 
 // Unmarshal parses the systemd unit data and stores the result in the value pointed to by v.
@@ -43,10 +44,10 @@ func unmarshalSections(file *File, rv reflect.Value) error {
 	knownSections := map[string]struct{}{}
 	tv := rv.Elem().Type()
 	for i := 0; i < rv.Elem().NumField(); i++ {
-		f := rv.Elem().Field(i)
-		sectionName := nameFromStructField(tv.Field(i))
-		knownSections[sectionName] = struct{}{}
-		sections := file.SectionsByName(sectionName)
+		field := rv.Elem().Field(i)
+		fieldConfig := configForField(tv.Field(i))
+		knownSections[fieldConfig.Name] = struct{}{}
+		sections := file.SectionsByName(fieldConfig.Name)
 		if len(sections) == 0 {
 			// no section with this name
 			// TODO load into "catch all property"
@@ -55,12 +56,12 @@ func unmarshalSections(file *File, rv reflect.Value) error {
 
 		for _, section := range sections {
 			var newObject reflect.Value
-			switch f.Type().Kind() {
+			switch field.Type().Kind() {
 			case reflect.Struct:
-				newObject = reflect.New(f.Type()).Elem()
+				newObject = reflect.New(field.Type()).Elem()
 
 			case reflect.Ptr, reflect.Slice:
-				newObject = reflect.New(f.Type().Elem())
+				newObject = reflect.New(field.Type().Elem())
 			}
 
 			newObjectPtr := newObject
@@ -76,11 +77,11 @@ func unmarshalSections(file *File, rv reflect.Value) error {
 				commentField.Set(reflect.ValueOf(section.Comment))
 			}
 
-			if f.Type().Kind() != reflect.Slice {
-				f.Set(newObject)
+			if field.Type().Kind() != reflect.Slice {
+				field.Set(newObject)
 				continue
 			}
-			f.Set(reflect.Append(f, newObjectPtr.Elem()))
+			field.Set(reflect.Append(field, newObjectPtr.Elem()))
 		}
 	}
 
@@ -108,25 +109,25 @@ func unmarshalKeys(section *Section, rv reflect.Value) error {
 	knownKeys := map[string]struct{}{}
 	tv := rv.Elem().Type()
 	for i := 0; i < rv.Elem().NumField(); i++ {
-		f := rv.Elem().Field(i)
+		field := rv.Elem().Field(i)
 
-		keyName := nameFromStructField(tv.Field(i))
-		knownKeys[keyName] = struct{}{}
-		keys := section.KeysByName(keyName)
+		fieldConfig := configForField(tv.Field(i))
+		knownKeys[fieldConfig.Name] = struct{}{}
+		keys := section.KeysByName(fieldConfig.Name)
 		if len(keys) == 0 {
 			// no key with this name
 			continue
 		}
 
 		var comment string
-		switch f.Type().Kind() {
+		switch field.Type().Kind() {
 		case reflect.String:
 			key := keys[len(keys)-1]
-			f.SetString(key.Value)
+			field.SetString(key.Value)
 			comment = key.Comment
 
 		case reflect.Slice:
-			if f.Type().Elem().Kind() != reflect.String {
+			if field.Type().Elem().Kind() != reflect.String {
 				// wrong key type
 				continue
 			}
@@ -139,7 +140,7 @@ func unmarshalKeys(section *Section, rv reflect.Value) error {
 				}
 				comment += key.Comment
 			}
-			f.Set(reflect.ValueOf(values))
+			field.Set(reflect.ValueOf(values))
 		}
 
 		// comment handling
@@ -148,7 +149,7 @@ func unmarshalKeys(section *Section, rv reflect.Value) error {
 			continue
 		}
 		addComment.Call([]reflect.Value{
-			reflect.ValueOf(keyName),
+			reflect.ValueOf(fieldConfig.Name),
 			reflect.ValueOf(comment),
 		})
 	}
@@ -170,12 +171,28 @@ func unmarshalKeys(section *Section, rv reflect.Value) error {
 
 const fieldTagName = "systemd"
 
-// returns the key or section name for a field
-func nameFromStructField(structField reflect.StructField) string {
+type fieldConfig struct {
+	Name      string
+	Omitempty bool
+}
+
+func configForField(structField reflect.StructField) (c fieldConfig) {
+	c.Name = structField.Name
+
 	if tag := structField.Tag.Get(fieldTagName); tag != "" {
-		return tag
+		idx := strings.Index(tag, ",")
+		if idx == -1 {
+			c.Name = tag
+			return
+		}
+
+		name := tag[:idx]
+		if name != "" {
+			c.Name = tag[:idx]
+		}
+		c.Omitempty = strings.Contains(tag[idx:], "omitempty")
 	}
-	return structField.Name
+	return
 }
 
 // An InvalidUnmarshalError describes an invalid argument passed to Unmarshal.

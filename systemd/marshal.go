@@ -38,18 +38,18 @@ func Marshal(v interface{}) ([]byte, error) {
 		}
 
 		field := rv.Elem().Field(i)
-		sectionName := nameFromStructField(structField)
+		fieldConfig := configForField(structField)
 		switch field.Type().Kind() {
 		case reflect.Ptr:
 			section := Section{
-				Name: sectionName,
+				Name: fieldConfig.Name,
 			}
 			marshalSection(&section, field)
 			file.Sections = append(file.Sections, section)
 
 		case reflect.Struct:
 			section := Section{
-				Name: sectionName,
+				Name: fieldConfig.Name,
 			}
 			marshalSection(&section, field.Addr())
 			file.Sections = append(file.Sections, section)
@@ -57,7 +57,7 @@ func Marshal(v interface{}) ([]byte, error) {
 		case reflect.Slice:
 			for i := 0; i < field.Len(); i++ {
 				section := Section{
-					Name: sectionName,
+					Name: fieldConfig.Name,
 				}
 				marshalSection(&section, field.Index(i).Addr())
 				file.Sections = append(file.Sections, section)
@@ -98,15 +98,30 @@ func marshalSection(section *Section, rv reflect.Value) {
 			continue
 		}
 
-		keyName := nameFromStructField(structField)
+		fieldConfig := configForField(tv.Field(i))
 		switch structField.Type.Kind() {
+		case reflect.Ptr:
+			if structField.Type.Elem().Kind() != reflect.String {
+				continue
+			}
+			key := Key{
+				Name:    fieldConfig.Name,
+				Comment: keyComment(rv, fieldConfig.Name),
+			}
+			if !field.IsNil() {
+				key.Value = field.Elem().String()
+			}
+			if key.Value == "" && fieldConfig.Omitempty {
+				continue
+			}
+
 		case reflect.String:
 			key := Key{
-				Name:    keyName,
+				Name:    fieldConfig.Name,
 				Value:   field.String(),
-				Comment: keyComment(rv, keyName),
+				Comment: keyComment(rv, fieldConfig.Name),
 			}
-			if key.Value == "" {
+			if key.Value == "" && fieldConfig.Omitempty {
 				continue
 			}
 
@@ -115,7 +130,7 @@ func marshalSection(section *Section, rv reflect.Value) {
 		case reflect.Slice:
 			for i, val := range field.Interface().([]string) {
 				key := Key{
-					Name:  keyName,
+					Name:  fieldConfig.Name,
 					Value: val,
 				}
 				if key.Value == "" {
@@ -124,7 +139,7 @@ func marshalSection(section *Section, rv reflect.Value) {
 
 				if i == 0 {
 					// Add the comment to the first Key
-					key.Comment = keyComment(rv, keyName)
+					key.Comment = keyComment(rv, fieldConfig.Name)
 				}
 				section.Keys = append(section.Keys, key)
 			}
