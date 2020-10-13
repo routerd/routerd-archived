@@ -51,12 +51,9 @@ func (d *decodeState) init(src []byte) *decodeState {
 }
 
 func (d *decodeState) decode() (*File, error) {
+decode:
 	for {
 		pos, tok, lit := d.scanner.Scan()
-		if tok == internal.EOF {
-			break
-		}
-
 		switch tok {
 		case internal.COMMENT:
 			d.addComment(pos, tok, lit)
@@ -71,6 +68,7 @@ func (d *decodeState) decode() (*File, error) {
 		case internal.EOF:
 			// force close
 			d.closeKey()
+			break decode
 
 		case internal.NEWLINE:
 			if d.key != nil &&
@@ -144,6 +142,9 @@ func (d *decodeState) addComment(pos internal.Position, tok internal.Token, lit 
 }
 
 func (d *decodeState) closeKey() {
+	if d.key == nil {
+		return
+	}
 	d.key.Comment = d.comment
 	d.key.Value = strings.ReplaceAll(d.key.Value, "\\", " ")
 	d.key = nil
