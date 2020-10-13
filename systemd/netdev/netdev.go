@@ -14,9 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package systemd
+package netdev
+
+import "routerd.net/routerd/systemd"
 
 type NetDev struct {
+	systemd.SectionList // SectionList to store unknown sections
+
 	Match                      *MatchSection
 	NetDev                     NetDevSection
 	Bridge                     *BridgeSection
@@ -48,6 +52,10 @@ type NetDev struct {
 
 // A virtual network device is only created if the [Match] section matches the current environment, or if the section is empty.
 type MatchSection struct {
+	systemd.KeyList        // KeyList to store unknown keys
+	Comment         string // Section Comment
+	systemd.KeyComments
+
 	// Matches against the hostname or machine ID of the host. See "ConditionHost=" in systemd.unit(5) for details.
 	// When prefixed with an exclamation mark ("!"), the result is negated. If an empty string is assigned, then previously assigned value is cleared.
 	Host *string `systemd:",omitempty"`
@@ -70,6 +78,10 @@ type MatchSection struct {
 }
 
 type NetDevSection struct {
+	systemd.KeyList        // KeyList to store unknown keys
+	Comment         string // Section Comment
+	systemd.KeyComments
+
 	// A free-form description of the netdev.
 	Description string `systemd:",omitempty"`
 	// The interface name used when creating the netdev. This setting is compulsory.
@@ -89,6 +101,10 @@ type NetDevSection struct {
 
 // The [Bridge] section only applies for netdevs of kind "bridge"
 type BridgeSection struct {
+	systemd.KeyList        // KeyList to store unknown keys
+	Comment         string // Section Comment
+	systemd.KeyComments
+
 	// HelloTimeSec specifies the number of seconds between two hello packets sent out by the root bridge and the designated bridges.
 	// Hello packets are used to communicate information about the topology throughout the entire bridged local area network.
 	HelloTimeSec string `systemd:",omitempty"`
@@ -132,6 +148,10 @@ type BridgeSection struct {
 
 // The [VLAN] section only applies for netdevs of kind "vlan"
 type VLANSection struct {
+	systemd.KeyList        // KeyList to store unknown keys
+	Comment         string // Section Comment
+	systemd.KeyComments
+
 	// The VLAN ID to use. An integer in the range 0–4094. This setting is compulsory.
 	Id string `systemd:",omitempty"`
 
@@ -150,6 +170,10 @@ type VLANSection struct {
 
 // The [MACVLAN] section only applies for netdevs of kind "macvlan"
 type MACVLANSection struct {
+	systemd.KeyList        // KeyList to store unknown keys
+	Comment         string // Section Comment
+	systemd.KeyComments
+
 	// The MACVLAN mode to use. The supported options are "private", "vepa", "bridge", "passthru", and "source".
 	Mode string `systemd:",omitempty"`
 
@@ -159,6 +183,10 @@ type MACVLANSection struct {
 
 // The [MACVTAP] section applies for netdevs of kind "macvtap"
 type MACVTAPSection struct {
+	systemd.KeyList        // KeyList to store unknown keys
+	Comment         string // Section Comment
+	systemd.KeyComments
+
 	// The MACVLAN mode to use. The supported options are "private", "vepa", "bridge", "passthru", and "source".
 	Mode string `systemd:",omitempty"`
 
@@ -168,6 +196,10 @@ type MACVTAPSection struct {
 
 // The [IPVLAN] section only applies for netdevs of kind "ipvlan"
 type IPVLANSection struct {
+	systemd.KeyList        // KeyList to store unknown keys
+	Comment         string // Section Comment
+	systemd.KeyComments
+
 	// The IPVLAN mode to use. The supported options are "L2","L3" and "L3S".
 	Mode string `systemd:",omitempty"`
 
@@ -177,6 +209,10 @@ type IPVLANSection struct {
 
 // The [IPVTAP] section only applies for netdevs of kind "ipvtap" and accepts the same key as [IPVLAN].
 type IPVTAPSection struct {
+	systemd.KeyList        // KeyList to store unknown keys
+	Comment         string // Section Comment
+	systemd.KeyComments
+
 	// The IPVLAN mode to use. The supported options are "L2","L3" and "L3S".
 	Mode string `systemd:",omitempty"`
 
@@ -186,6 +222,10 @@ type IPVTAPSection struct {
 
 // The [VXLAN] section only applies for netdevs of kind "vxlan"
 type VXLANSection struct {
+	systemd.KeyList        // KeyList to store unknown keys
+	Comment         string // Section Comment
+	systemd.KeyComments
+
 	// The VXLAN Network Identifier (or VXLAN Segment ID). Takes a number in the range 1-16777215.
 	VNI string `systemd:",omitempty"`
 
@@ -261,6 +301,10 @@ type VXLANSection struct {
 
 // The [GENEVE] section only applies for netdevs of kind "geneve"
 type GENEVESection struct {
+	systemd.KeyList        // KeyList to store unknown keys
+	Comment         string // Section Comment
+	systemd.KeyComments
+
 	// Specifies the Virtual Network Identifier (VNI) to use. Ranges [0-16777215]. This field is mandatory.
 	Id string `systemd:",omitempty"`
 
@@ -294,6 +338,10 @@ type GENEVESection struct {
 
 // The [L2TP] section only applies for netdevs of kind "l2tp"
 type L2TPSection struct {
+	systemd.KeyList        // KeyList to store unknown keys
+	Comment         string // Section Comment
+	systemd.KeyComments
+
 	// Specifies the tunnel identifier. Takes an number in the range 1–4294967295. The value used must match the "PeerTunnelId=" value being used at the peer. This setting is compulsory.
 	TunnelId string `systemd:",omitempty"`
 
@@ -327,6 +375,10 @@ type L2TPSection struct {
 
 // The [L2TPSession] section only applies for netdevs of kind "l2tp"
 type L2TPSessionSection struct {
+	systemd.KeyList        // KeyList to store unknown keys
+	Comment         string // Section Comment
+	systemd.KeyComments
+
 	// Specifies the name of the session. This setting is compulsory.
 	Name string `systemd:",omitempty"`
 
@@ -342,6 +394,10 @@ type L2TPSessionSection struct {
 
 // The [MACsec] section only applies for network devices of kind "macsec", and accepts the following keys:
 type MACsecSection struct {
+	systemd.KeyList        // KeyList to store unknown keys
+	Comment         string // Section Comment
+	systemd.KeyComments
+
 	// Specifies the port to be used for the MACsec transmit channel. The port is used to make secure channel identifier (SCI). Takes a value between 1 and 65535. Defaults to unset.
 	Port string `systemd:",omitempty"`
 
@@ -351,6 +407,10 @@ type MACsecSection struct {
 
 // The [MACsecReceiveChannel] section only applies for network devices of kind "macsec", and accepts the following keys:
 type MACsecReceiveChannelSection struct {
+	systemd.KeyList        // KeyList to store unknown keys
+	Comment         string // Section Comment
+	systemd.KeyComments
+
 	// Specifies the port to be used for the MACsec receive channel. The port is used to make secure channel identifier (SCI). Takes a value between 1 and 65535. This option is compulsory, and is not set by default.
 	Port string `systemd:",omitempty"`
 
@@ -360,6 +420,10 @@ type MACsecReceiveChannelSection struct {
 
 // The [MACsecTransmitAssociation] section only applies for network devices of kind "macsec", and accepts the following keys:
 type MACsecTransmitAssociationSection struct {
+	systemd.KeyList        // KeyList to store unknown keys
+	Comment         string // Section Comment
+	systemd.KeyComments
+
 	// Specifies the packet number to be used for replay protection and the construction of the initialization vector (along with the secure channel identifier [SCI]). Takes a value between 1-4,294,967,295. Defaults to unset.
 	PacketNumber string `systemd:",omitempty"`
 
@@ -381,6 +445,10 @@ type MACsecTransmitAssociationSection struct {
 
 // The [MACsecReceiveAssociation] section only applies for network devices of kind "macsec", and accepts the following keys:
 type MACsecReceiveAssociationSection struct {
+	systemd.KeyList        // KeyList to store unknown keys
+	Comment         string // Section Comment
+	systemd.KeyComments
+
 	// Accepts the same key in [MACsecReceiveChannel] section.
 	Port string `systemd:",omitempty"`
 
@@ -405,6 +473,10 @@ type MACsecReceiveAssociationSection struct {
 
 // The [Tunnel] section only applies for netdevs of kind "ipip", "sit", "gre", "gretap", "ip6gre", "ip6gretap", "vti", "vti6", "ip6tnl", and "erspan" and accepts the following keys:
 type TunnelSection struct {
+	systemd.KeyList        // KeyList to store unknown keys
+	Comment         string // Section Comment
+	systemd.KeyComments
+
 	// A static local address for tunneled packets. It must be an address on another interface of this host, or the special value "any".
 	Local string `systemd:",omitempty"`
 
@@ -477,6 +549,10 @@ type TunnelSection struct {
 
 // The [FooOverUDP] section only applies for netdevs of kind "fou" and accepts the following keys:
 type FooOverUDPSection struct {
+	systemd.KeyList        // KeyList to store unknown keys
+	Comment         string // Section Comment
+	systemd.KeyComments
+
 	// Specifies the encapsulation mechanism used to store networking packets of various protocols inside the UDP packets. Supports the following values: "FooOverUDP" provides the simplest no frills model of UDP encapsulation, it simply encapsulates packets directly in the UDP payload. "GenericUDPEncapsulation" is a generic and extensible encapsulation, it allows encapsulation of packets for any IP protocol and optional data as part of the encapsulation. For more detailed information see Generic UDP Encapsulation. Defaults to "FooOverUDP".
 	Encapsulation string `systemd:",omitempty"`
 
@@ -498,6 +574,10 @@ type FooOverUDPSection struct {
 
 // The [Peer] section only applies for netdevs of kind "veth" and accepts the following keys:
 type PeerSection struct {
+	systemd.KeyList        // KeyList to store unknown keys
+	Comment         string // Section Comment
+	systemd.KeyComments
+
 	// The interface name used when creating the netdev. This setting is compulsory.
 	Name string `systemd:",omitempty"`
 
@@ -507,12 +587,20 @@ type PeerSection struct {
 
 // The [VXCAN] section only applies for netdevs of kind "vxcan"
 type VXCANSection struct {
+	systemd.KeyList        // KeyList to store unknown keys
+	Comment         string // Section Comment
+	systemd.KeyComments
+
 	// The peer interface name used when creating the netdev. This setting is compulsory.
 	Peer string `systemd:",omitempty"`
 }
 
 // The [Tun] section only applies for netdevs of kind "tun", and accepts the following keys:
 type TunSection struct {
+	systemd.KeyList        // KeyList to store unknown keys
+	Comment         string // Section Comment
+	systemd.KeyComments
+
 	// Takes a boolean. Configures whether to use multiple file descriptors (queues) to parallelize packets sending and receiving. Defaults to "no".
 	MultiQueue *bool `systemd:",omitempty"`
 
@@ -531,6 +619,10 @@ type TunSection struct {
 
 // The [Tap] section only applies for netdevs of kind "tap", and accepts the same keys as the [Tun] section.
 type TapSection struct {
+	systemd.KeyList        // KeyList to store unknown keys
+	Comment         string // Section Comment
+	systemd.KeyComments
+
 	// Takes a boolean. Configures whether to use multiple file descriptors (queues) to parallelize packets sending and receiving. Defaults to "no".
 	MultiQueue *bool `systemd:",omitempty"`
 
@@ -548,6 +640,10 @@ type TapSection struct {
 }
 
 type WireGuardSection struct {
+	systemd.KeyList        // KeyList to store unknown keys
+	Comment         string // Section Comment
+	systemd.KeyComments
+
 	// The Base64 encoded private key for the interface. It can be generated using the wg genkey command (see wg(8)). This option or PrivateKeyFile= is mandatory to use WireGuard. Note that because this information is secret, you may want to set the permissions of the .netdev file to be owned by "root:systemd-network" with a "0640" file mode.
 	PrivateKey string `systemd:",omitempty"`
 
@@ -562,6 +658,10 @@ type WireGuardSection struct {
 }
 
 type WireGuardPeerSection struct {
+	systemd.KeyList        // KeyList to store unknown keys
+	Comment         string // Section Comment
+	systemd.KeyComments
+
 	// Sets a Base64 encoded public key calculated by wg pubkey (see wg(8)) from a private key, and usually transmitted out of band to the author of the configuration file. This option is mandatory for this section.
 	PublicKey string `systemd:",omitempty"`
 
@@ -582,6 +682,10 @@ type WireGuardPeerSection struct {
 }
 
 type BondSection struct {
+	systemd.KeyList        // KeyList to store unknown keys
+	Comment         string // Section Comment
+	systemd.KeyComments
+
 	// Specifies one of the bonding policies. The default is "balance-rr" (round robin). Possible values are "balance-rr", "active-backup", "balance-xor", "broadcast", "802.3ad", "balance-tlb", and "balance-alb".
 	Mode string `systemd:",omitempty"`
 
@@ -653,6 +757,10 @@ type BondSection struct {
 }
 
 type XfrmSection struct {
+	systemd.KeyList        // KeyList to store unknown keys
+	Comment         string // Section Comment
+	systemd.KeyComments
+
 	// Sets the ID/key of the xfrm interface which needs to be associated with a SA/policy. Can be decimal or hexadecimal, valid range is 0-0xffffffff, defaults to 0.
 	InterfaceId string `systemd:",omitempty"`
 
@@ -662,6 +770,10 @@ type XfrmSection struct {
 
 // The [VRF] section only applies for netdevs of kind "vrf"
 type VRFSection struct {
+	systemd.KeyList        // KeyList to store unknown keys
+	Comment         string // Section Comment
+	systemd.KeyComments
+
 	// The numeric routing table identifier. This setting is compulsory.
 	Table string `systemd:",omitempty"`
 }

@@ -14,9 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package systemd
+package network
+
+import "routerd.net/routerd/systemd"
 
 type Network struct {
+	systemd.SectionList // SectionList to store unknown sections
+
 	Match                           *MatchSection
 	Link                            *LinkSection
 	SRIOVs                          []SRIOVSection `systemd:"SR-IOV"`
@@ -71,6 +75,10 @@ type Network struct {
 // A network file is said to match a network interface if all matches specified by the [Match] section are satisfied. When a network file does not contain valid settings in [Match] section, then the file will match all interfaces and systemd-networkd warns about that. Hint: to avoid the warning and to make it clear that all interfaces shall be matched, add the following:
 // Name=*
 type MatchSection struct {
+	systemd.KeyList        // KeyList to store unknown keys
+	Comment         string // Section Comment
+	systemd.KeyComments
+
 	// A whitespace-separated list of hardware addresses. Use full colon-, hyphen- or dot-delimited hexadecimal. See the example below. This option may appear more than once, in which case the lists are merged. If the empty string is assigned to this option, the list of hardware addresses defined prior to this is reset.
 	// Example:
 	// MACAddress=01:23:45:67:89:ab 00-11-22-33-44-55 AABB.CCDD.EEFF
@@ -120,6 +128,10 @@ type MatchSection struct {
 }
 
 type LinkSection struct {
+	systemd.KeyList        // KeyList to store unknown keys
+	Comment         string // Section Comment
+	systemd.KeyComments
+
 	// The hardware address to set for the device.
 	MACAddress string `systemd:",omitempty"`
 
@@ -155,6 +167,10 @@ type LinkSection struct {
 
 // The [SR-IOV] section accepts the following keys. Specify several [SR-IOV] sections to configure several SR-IOVs. SR-IOV provides the ability to partition a single physical PCI resource into virtual PCI functions which can then be injected into a VM. In the case of network VFs, SR-IOV improves north-south network performance (that is, traffic with endpoints outside the host machine) by allowing traffic to bypass the host machine’s network stack.
 type SRIOVSection struct {
+	systemd.KeyList        // KeyList to store unknown keys
+	Comment         string // Section Comment
+	systemd.KeyComments
+
 	// Specifies a Virtual Function (VF), lightweight PCIe function designed solely to move data in and out. Takes an unsigned integer in the range 0..2147483646. This option is compulsory.
 	VirtualFunction string `systemd:",omitempty"`
 
@@ -184,6 +200,10 @@ type SRIOVSection struct {
 }
 
 type NetworkSection struct {
+	systemd.KeyList        // KeyList to store unknown keys
+	Comment         string // Section Comment
+	systemd.KeyComments
+
 	// A description of the device. This is only used for presentation purposes.
 	Description string `systemd:",omitempty"`
 
@@ -363,6 +383,10 @@ type NetworkSection struct {
 
 // An [Address] section accepts the following keys. Specify several [Address] sections to configure several addresses.
 type AddressSection struct {
+	systemd.KeyList        // KeyList to store unknown keys
+	Comment         string // Section Comment
+	systemd.KeyComments
+
 	// As in the [Network] section. This key is mandatory. Each [Address] section can contain one Address= setting.
 	Address string `systemd:",omitempty"`
 
@@ -399,6 +423,10 @@ type AddressSection struct {
 
 // A [Neighbor] section accepts the following keys. The neighbor section adds a permanent, static entry to the neighbor table (IPv6) or ARP table (IPv4) for the given hardware address on the links matched for the network. Specify several [Neighbor] sections to configure several static neighbors.
 type NeighborSection struct {
+	systemd.KeyList        // KeyList to store unknown keys
+	Comment         string // Section Comment
+	systemd.KeyComments
+
 	// The IP address of the neighbor.
 	Address string `systemd:",omitempty"`
 
@@ -408,6 +436,10 @@ type NeighborSection struct {
 
 // An [IPv6AddressLabel] section accepts the following keys. Specify several [IPv6AddressLabel] sections to configure several address labels. IPv6 address labels are used for address selection. See RFC 3484. Precedence is managed by userspace, and only the label itself is stored in the kernel
 type IPv6AddressLabelSection struct {
+	systemd.KeyList        // KeyList to store unknown keys
+	Comment         string // Section Comment
+	systemd.KeyComments
+
 	// The label for the prefix, an unsigned integer in the range 0–4294967294. 0xffffffff is reserved. This setting is mandatory.
 	Label string `systemd:",omitempty"`
 
@@ -417,6 +449,10 @@ type IPv6AddressLabelSection struct {
 
 // An [RoutingPolicyRule] section accepts the following keys. Specify several [RoutingPolicyRule] sections to configure several rules.
 type RoutingPolicyRuleSection struct {
+	systemd.KeyList        // KeyList to store unknown keys
+	Comment         string // Section Comment
+	systemd.KeyComments
+
 	// Takes a number between 0 and 255 that specifies the type of service to match.
 	TypeOfService string `systemd:",omitempty"`
 
@@ -465,6 +501,10 @@ type RoutingPolicyRuleSection struct {
 
 // The [NextHop] section is used to manipulate entries in the kernel's "nexthop" tables. The [NextHop] section accepts the following keys. Specify several [NextHop] sections to configure several hops.
 type NextHopSection struct {
+	systemd.KeyList        // KeyList to store unknown keys
+	Comment         string // Section Comment
+	systemd.KeyComments
+
 	// As in the [Network] section. This is mandatory.
 	Gateway string `systemd:",omitempty"`
 
@@ -474,6 +514,10 @@ type NextHopSection struct {
 
 // The [Route] section accepts the following keys. Specify several [Route] sections to configure several routes.
 type RouteSection struct {
+	systemd.KeyList        // KeyList to store unknown keys
+	Comment         string // Section Comment
+	systemd.KeyComments
+
 	// Takes the gateway address or special value "_dhcp". If "_dhcp", then the gateway address provided by DHCP (or in the IPv6 case, provided by IPv6 RA) is used.
 	Gateway string `systemd:",omitempty"`
 
@@ -537,6 +581,10 @@ type RouteSection struct {
 
 // The [DHCPv4] section configures the DHCPv4 client, if it is enabled with the DHCP= setting described above:
 type DHCPv4Section struct {
+	systemd.KeyList        // KeyList to store unknown keys
+	Comment         string // Section Comment
+	systemd.KeyComments
+
 	// When true (the default), the DNS servers received from the DHCP server will be used and take precedence over any statically configured ones.
 	UseDNS string `systemd:",omitempty"`
 	//
@@ -656,6 +704,10 @@ type DHCPv4Section struct {
 
 // The [DHCPv6] section configures the DHCPv6 client, if it is enabled with the DHCP= setting described above, or invoked by the IPv6 Router Advertisement:
 type DHCPv6Section struct {
+	systemd.KeyList        // KeyList to store unknown keys
+	Comment         string // Section Comment
+	systemd.KeyComments
+
 	// As in the [DHCPv4] section.
 	UseDNS string `systemd:",omitempty"`
 	// As in the [DHCPv4] section.
@@ -697,6 +749,10 @@ type DHCPv6Section struct {
 
 // The [DHCPv6PrefixDelegation] section configures delegated prefix assigned by DHCPv6 server. The settings in this section are used only when IPv6PrefixDelegation= setting is enabled, or set to "dhcp6".
 type DHCPv6PrefixDelegationSection struct {
+	systemd.KeyList        // KeyList to store unknown keys
+	Comment         string // Section Comment
+	systemd.KeyComments
+
 	// Configure a specific subnet ID on the interface from a (previously) received prefix delegation. You can either set "auto" (the default) or a specific subnet ID (as defined in RFC 4291, section 2.5.4), in which case the allowed value is hexadecimal, from 0 to 0x7fffffffffffffff inclusive. This option is only effective when used together with IPv6PrefixDelegation= and the corresponding configuration on the upstream interface.
 	SubnetId string `systemd:",omitempty"`
 
@@ -709,6 +765,10 @@ type DHCPv6PrefixDelegationSection struct {
 
 // The [IPv6AcceptRA] section configures the IPv6 Router Advertisement (RA) client, if it is enabled with the IPv6AcceptRA= setting described above:
 type IPv6AcceptRASection struct {
+	systemd.KeyList        // KeyList to store unknown keys
+	Comment         string // Section Comment
+	systemd.KeyComments
+
 	// When true (the default), the DNS servers received in the Router Advertisement will be used and take precedence over any statically configured ones.
 	UseDNS string `systemd:",omitempty"`
 	//
@@ -739,6 +799,10 @@ type IPv6AcceptRASection struct {
 
 // The [DHCPServer] section contains settings for the DHCP server, if enabled via the DHCPServer= option described above:
 type DHCPServerSection struct {
+	systemd.KeyList        // KeyList to store unknown keys
+	Comment         string // Section Comment
+	systemd.KeyComments
+
 	// Configures the pool of addresses to hand out. The pool is a contiguous sequence of IP addresses in the subnet configured for the server address, which does not include the subnet nor the broadcast address. PoolOffset= takes the offset of the pool from the start of subnet, or zero to use the default value. PoolSize= takes the number of IP addresses in the pool or zero to use the default value. By default, the pool starts at the first address after the subnet address and takes up the rest of the subnet, excluding the broadcast address. If the pool includes the server address (the default), this is reserved and not handed out to clients.
 	PoolOffset, PoolSize string `systemd:",omitempty"`
 
@@ -766,6 +830,10 @@ type DHCPServerSection struct {
 
 // The [IPv6PrefixDelegation] section contains settings for sending IPv6 Router Advertisements and whether to act as a router, if enabled via the IPv6PrefixDelegation= option described above. IPv6 network prefixes are defined with one or more [IPv6Prefix] sections.
 type IPv6PrefixDelegationSection struct {
+	systemd.KeyList        // KeyList to store unknown keys
+	Comment         string // Section Comment
+	systemd.KeyComments
+
 	// Takes a boolean. Controls whether a DHCPv6 server is used to acquire IPv6 addresses on the network link when Managed= is set to "true" or if only additional network information can be obtained via DHCPv6 for the network link when OtherInformation= is set to "true". Both settings default to "false", which means that a DHCPv6 server is not being used.
 	Managed, OtherInformation string `systemd:",omitempty"`
 
@@ -787,6 +855,10 @@ type IPv6PrefixDelegationSection struct {
 
 // One or more [IPv6Prefix] sections contain the IPv6 prefixes that are announced via Router Advertisements. See RFC 4861 for further details.
 type IPv6PrefixSection struct {
+	systemd.KeyList        // KeyList to store unknown keys
+	Comment         string // Section Comment
+	systemd.KeyComments
+
 	// Takes a boolean to specify whether IPv6 addresses can be autoconfigured with this prefix and whether the prefix can be used for onlink determination. Both settings default to "true" in order to ease configuration.
 	AddressAutoconfiguration, OnLink string `systemd:",omitempty"`
 
@@ -802,6 +874,10 @@ type IPv6PrefixSection struct {
 
 // One or more [IPv6RoutePrefix] sections contain the IPv6 prefix routes that are announced via Router Advertisements. See RFC 4191 for further details.
 type IPv6RoutePrefixSection struct {
+	systemd.KeyList        // KeyList to store unknown keys
+	Comment         string // Section Comment
+	systemd.KeyComments
+
 	// The IPv6 route that is to be distributed to hosts. Similarly to configuring static IPv6 routes, the setting is configured as an IPv6 prefix routes and its prefix route length, separated by a "/" character. Use multiple [IPv6PrefixRoutes] sections to configure multiple IPv6 prefix routes.
 	Route string `systemd:",omitempty"`
 
@@ -810,6 +886,10 @@ type IPv6RoutePrefixSection struct {
 }
 
 type BridgeSection struct {
+	systemd.KeyList        // KeyList to store unknown keys
+	Comment         string // Section Comment
+	systemd.KeyComments
+
 	// Takes a boolean. Controls whether the bridge should flood traffic for which an FDB entry is missing and the destination is unknown through this port. When unset, the kernel's default will be used.
 	UnicastFlood string `systemd:",omitempty"`
 
@@ -855,6 +935,10 @@ type BridgeSection struct {
 
 // The [BridgeFDB] section manages the forwarding database table of a port and accepts the following keys. Specify several [BridgeFDB] sections to configure several static MAC table entries.
 type BridgeFDBSection struct {
+	systemd.KeyList        // KeyList to store unknown keys
+	Comment         string // Section Comment
+	systemd.KeyComments
+
 	// As in the [Network] section. This key is mandatory.
 	MACAddress string `systemd:",omitempty"`
 
@@ -873,12 +957,20 @@ type BridgeFDBSection struct {
 
 // The [LLDP] section manages the Link Layer Discovery Protocol (LLDP) and accepts the following keys.
 type LLDPSection struct {
+	systemd.KeyList        // KeyList to store unknown keys
+	Comment         string // Section Comment
+	systemd.KeyComments
+
 	// Controls support for Ethernet LLDP packet's Manufacturer Usage Description (MUD). MUD is an embedded software standard defined by the IETF that allows IoT Device makers to advertise device specifications, including the intended communication patterns for their device when it connects to the network. The network can then use this intent to author a context-specific access policy, so the device functions only within those parameters. Takes an URL of length up to 255 characters. A superficial verification that the string is a valid URL will be performed. See RFC 8520 for details. The MUD URL received from the LLDP packets will be saved at the state files and can be read via sd_lldp_neighbor_get_mud_url() function.
 	MUDURL string `systemd:",omitempty"`
 }
 
 // The [CAN] section manages the Controller Area Network (CAN bus) and accepts the following keys:
 type CANSection struct {
+	systemd.KeyList        // KeyList to store unknown keys
+	Comment         string // Section Comment
+	systemd.KeyComments
+
 	// The bitrate of CAN device in bits per second. The usual SI prefixes (K, M) with the base of 1000 can be used here. Takes a number in the range 1..4294967295.
 	BitRate string `systemd:",omitempty"`
 
@@ -909,6 +1001,10 @@ type CANSection struct {
 
 // The [QDisc] section manages the traffic control queueing discipline (qdisc).
 type QDiscSection struct {
+	systemd.KeyList        // KeyList to store unknown keys
+	Comment         string // Section Comment
+	systemd.KeyComments
+
 	// Specifies the parent Queueing Discipline (qdisc). Takes one of "clsact" or "ingress". This is mandatory.
 	Parent string `systemd:",omitempty"`
 
@@ -918,6 +1014,10 @@ type QDiscSection struct {
 
 // The [NetworkEmulator] section manages the queueing discipline (qdisc) of the network emulator. It can be used to configure the kernel packet scheduler and simulate packet delay and loss for UDP or TCP applications, or limit the bandwidth usage of a particular service to simulate internet connections.
 type NetworkEmulatorSection struct {
+	systemd.KeyList        // KeyList to store unknown keys
+	Comment         string // Section Comment
+	systemd.KeyComments
+
 	// Configures the parent Queueing Discipline (qdisc). Takes one of "root", "clsact", "ingress" or a class identifier. The class identifier is specified as the major and minor numbers in hexadecimal in the range 0x1–Oxffff separated with a colon ("major:minor"). Defaults to "root".
 	Parent string `systemd:",omitempty"`
 
@@ -942,6 +1042,10 @@ type NetworkEmulatorSection struct {
 
 // The [TokenBucketFilter] section manages the queueing discipline (qdisc) of token bucket filter (tbf).
 type TokenBucketFilterSection struct {
+	systemd.KeyList        // KeyList to store unknown keys
+	Comment         string // Section Comment
+	systemd.KeyComments
+
 	// Configures the parent Queueing Discipline (qdisc). Takes one of "root", "clsact", "ingress" or a class identifier. The class identifier is specified as the major and minor numbers in hexadecimal in the range 0x1–Oxffff separated with a colon ("major:minor"). Defaults to "root".
 	Parent string `systemd:",omitempty"`
 
@@ -972,6 +1076,10 @@ type TokenBucketFilterSection struct {
 
 // The [PIE] section manages the queueing discipline (qdisc) of Proportional Integral controller-Enhanced (PIE).
 type PIESection struct {
+	systemd.KeyList        // KeyList to store unknown keys
+	Comment         string // Section Comment
+	systemd.KeyComments
+
 	// Configures the parent Queueing Discipline (qdisc). Takes one of "root", "clsact", "ingress" or a class identifier. The class identifier is specified as the major and minor numbers in hexadecimal in the range 0x1–Oxffff separated with a colon ("major:minor"). Defaults to "root".
 	Parent string `systemd:",omitempty"`
 
@@ -984,6 +1092,10 @@ type PIESection struct {
 
 // The [StochasticFairBlue] section manages the queueing discipline (qdisc) of stochastic fair blue (sfb).
 type StochasticFairBlueSection struct {
+	systemd.KeyList        // KeyList to store unknown keys
+	Comment         string // Section Comment
+	systemd.KeyComments
+
 	// Configures the parent Queueing Discipline (qdisc). Takes one of "root", "clsact", "ingress" or a class identifier. The class identifier is specified as the major and minor numbers in hexadecimal in the range 0x1–Oxffff separated with a colon ("major:minor"). Defaults to "root".
 	Parent string `systemd:",omitempty"`
 
@@ -996,6 +1108,10 @@ type StochasticFairBlueSection struct {
 
 // The [StochasticFairnessQueueing] section manages the queueing discipline (qdisc) of stochastic fairness queueing (sfq).
 type StochasticFairnessQueueingSection struct {
+	systemd.KeyList        // KeyList to store unknown keys
+	Comment         string // Section Comment
+	systemd.KeyComments
+
 	// Configures the parent Queueing Discipline (qdisc). Takes one of "root", "clsact", "ingress" or a class identifier. The class identifier is specified as the major and minor numbers in hexadecimal in the range 0x1–Oxffff separated with a colon ("major:minor"). Defaults to "root".
 	Parent string `systemd:",omitempty"`
 
@@ -1008,6 +1124,10 @@ type StochasticFairnessQueueingSection struct {
 
 // The [BFIFO] section manages the queueing discipline (qdisc) of Byte limited Packet First In First Out (bfifo).
 type BFIFOSection struct {
+	systemd.KeyList        // KeyList to store unknown keys
+	Comment         string // Section Comment
+	systemd.KeyComments
+
 	// Configures the parent Queueing Discipline (qdisc). Takes one of "root", "clsact", "ingress" or a class identifier. The class identifier is specified as the major and minor numbers in hexadecimal in the range 0x1–Oxffff separated with a colon ("major:minor"). Defaults to "root".
 	Parent string `systemd:",omitempty"`
 
@@ -1020,6 +1140,10 @@ type BFIFOSection struct {
 
 // The [PFIFO] section manages the queueing discipline (qdisc) of Packet First In First Out (pfifo).
 type PFIFOSection struct {
+	systemd.KeyList        // KeyList to store unknown keys
+	Comment         string // Section Comment
+	systemd.KeyComments
+
 	// Configures the parent Queueing Discipline (qdisc). Takes one of "root", "clsact", "ingress" or a class identifier. The class identifier is specified as the major and minor numbers in hexadecimal in the range 0x1–Oxffff separated with a colon ("major:minor"). Defaults to "root".
 	Parent string `systemd:",omitempty"`
 
@@ -1032,6 +1156,10 @@ type PFIFOSection struct {
 
 // The [PFIFOHeadDrop] section manages the queueing discipline (qdisc) of Packet First In First Out Head Drop (pfifo_head_drop).
 type PFIFOHeadDropSection struct {
+	systemd.KeyList        // KeyList to store unknown keys
+	Comment         string // Section Comment
+	systemd.KeyComments
+
 	// Configures the parent Queueing Discipline (qdisc). Takes one of "root", "clsact", "ingress" or a class identifier. The class identifier is specified as the major and minor numbers in hexadecimal in the range 0x1–Oxffff separated with a colon ("major:minor"). Defaults to "root".
 	Parent string `systemd:",omitempty"`
 
@@ -1044,6 +1172,10 @@ type PFIFOHeadDropSection struct {
 
 // The [PFIFOFast] section manages the queueing discipline (qdisc) of Packet First In First Out Fast (pfifo_fast).
 type PFIFOFastSection struct {
+	systemd.KeyList        // KeyList to store unknown keys
+	Comment         string // Section Comment
+	systemd.KeyComments
+
 	// Configures the parent Queueing Discipline (qdisc). Takes one of "root", "clsact", "ingress" or a class identifier. The class identifier is specified as the major and minor numbers in hexadecimal in the range 0x1–Oxffff separated with a colon ("major:minor"). Defaults to "root".
 	Parent string `systemd:",omitempty"`
 
@@ -1053,6 +1185,10 @@ type PFIFOFastSection struct {
 
 // The [CAKE] section manages the queueing discipline (qdisc) of Common Applications Kept Enhanced (CAKE).
 type CAKESection struct {
+	systemd.KeyList        // KeyList to store unknown keys
+	Comment         string // Section Comment
+	systemd.KeyComments
+
 	// Configures the parent Queueing Discipline (qdisc). Takes one of "root", "clsact", "ingress" or a class identifier. The class identifier is specified as the major and minor numbers in hexadecimal in the range 0x1–Oxffff separated with a colon ("major:minor"). Defaults to "root".
 	Parent string `systemd:",omitempty"`
 
@@ -1068,6 +1204,10 @@ type CAKESection struct {
 
 // The [ControlledDelay] section manages the queueing discipline (qdisc) of controlled delay (CoDel).
 type ControlledDelaySection struct {
+	systemd.KeyList        // KeyList to store unknown keys
+	Comment         string // Section Comment
+	systemd.KeyComments
+
 	// Configures the parent Queueing Discipline (qdisc). Takes one of "root", "clsact", "ingress" or a class identifier. The class identifier is specified as the major and minor numbers in hexadecimal in the range 0x1–Oxffff separated with a colon ("major:minor"). Defaults to "root".
 	Parent string `systemd:",omitempty"`
 
@@ -1092,6 +1232,10 @@ type ControlledDelaySection struct {
 
 // The [DeficitRoundRobinScheduler] section manages the queueing discipline (qdisc) of Deficit Round Robin Scheduler (DRR).
 type DeficitRoundRobinSchedulerSection struct {
+	systemd.KeyList        // KeyList to store unknown keys
+	Comment         string // Section Comment
+	systemd.KeyComments
+
 	// Configures the parent Queueing Discipline (qdisc). Takes one of "root", "clsact", "ingress" or a class identifier. The class identifier is specified as the major and minor numbers in hexadecimal in the range 0x1–Oxffff separated with a colon ("major:minor"). Defaults to "root".
 	Parent string `systemd:",omitempty"`
 
@@ -1101,6 +1245,10 @@ type DeficitRoundRobinSchedulerSection struct {
 
 // The [DeficitRoundRobinSchedulerClass] section manages the traffic control class of Deficit Round Robin Scheduler (DRR).
 type DeficitRoundRobinSchedulerClassSection struct {
+	systemd.KeyList        // KeyList to store unknown keys
+	Comment         string // Section Comment
+	systemd.KeyComments
+
 	// Configures the parent Queueing Discipline (qdisc). Takes one of "root", or a qdisc identifier. The qdisc identifier is specified as the major and minor numbers in hexadecimal in the range 0x1–Oxffff separated with a colon ("major:minor"). Defaults to "root".
 	Parent string `systemd:",omitempty"`
 
@@ -1113,6 +1261,10 @@ type DeficitRoundRobinSchedulerClassSection struct {
 
 // The [EnhancedTransmissionSelection] section manages the queueing discipline (qdisc) of Enhanced Transmission Selection (ETS).
 type EnhancedTransmissionSelectionSection struct {
+	systemd.KeyList        // KeyList to store unknown keys
+	Comment         string // Section Comment
+	systemd.KeyComments
+
 	// Configures the parent Queueing Discipline (qdisc). Takes one of "root", "clsact", "ingress" or a class identifier. The class identifier is specified as the major and minor numbers in hexadecimal in the range 0x1–Oxffff separated with a colon ("major:minor"). Defaults to "root".
 	Parent string `systemd:",omitempty"`
 
@@ -1134,6 +1286,10 @@ type EnhancedTransmissionSelectionSection struct {
 
 // The [GenericRandomEarlyDetection] section manages the queueing discipline (qdisc) of Generic Random Early Detection (GRED).
 type GenericRandomEarlyDetectionSection struct {
+	systemd.KeyList        // KeyList to store unknown keys
+	Comment         string // Section Comment
+	systemd.KeyComments
+
 	// Configures the parent Queueing Discipline (qdisc). Takes one of "root", "clsact", "ingress" or a class identifier. The class identifier is specified as the major and minor numbers in hexadecimal in the range 0x1–Oxffff separated with a colon ("major:minor"). Defaults to "root".
 	Parent string `systemd:",omitempty"`
 
@@ -1152,6 +1308,10 @@ type GenericRandomEarlyDetectionSection struct {
 
 // The [FairQueueingControlledDelay] section manages the queueing discipline (qdisc) of fair queuing controlled delay (FQ-CoDel).
 type FairQueueingControlledDelaySection struct {
+	systemd.KeyList        // KeyList to store unknown keys
+	Comment         string // Section Comment
+	systemd.KeyComments
+
 	// Configures the parent Queueing Discipline (qdisc). Takes one of "root", "clsact", "ingress" or a class identifier. The class identifier is specified as the major and minor numbers in hexadecimal in the range 0x1–Oxffff separated with a colon ("major:minor"). Defaults to "root".
 	Parent string `systemd:",omitempty"`
 
@@ -1185,6 +1345,10 @@ type FairQueueingControlledDelaySection struct {
 
 // The [FairQueueing] section manages the queueing discipline (qdisc) of fair queue traffic policing (FQ).
 type FairQueueingSection struct {
+	systemd.KeyList        // KeyList to store unknown keys
+	Comment         string // Section Comment
+	systemd.KeyComments
+
 	// Configures the parent Queueing Discipline (qdisc). Takes one of "root", "clsact", "ingress" or a class identifier. The class identifier is specified as the major and minor numbers in hexadecimal in the range 0x1–Oxffff separated with a colon ("major:minor"). Defaults to "root".
 	Parent string `systemd:",omitempty"`
 
@@ -1221,6 +1385,10 @@ type FairQueueingSection struct {
 
 // The [TrivialLinkEqualizer] section manages the queueing discipline (qdisc) of trivial link equalizer (teql).
 type TrivialLinkEqualizerSection struct {
+	systemd.KeyList        // KeyList to store unknown keys
+	Comment         string // Section Comment
+	systemd.KeyComments
+
 	// Configures the parent Queueing Discipline (qdisc). Takes one of "root", "clsact", "ingress" or a class identifier. The class identifier is specified as the major and minor numbers in hexadecimal in the range 0x1–Oxffff separated with a colon ("major:minor"). Defaults to "root".
 	Parent string `systemd:",omitempty"`
 
@@ -1233,6 +1401,10 @@ type TrivialLinkEqualizerSection struct {
 
 // The [HierarchyTokenBucket] section manages the queueing discipline (qdisc) of hierarchy token bucket (htb).
 type HierarchyTokenBucketSection struct {
+	systemd.KeyList        // KeyList to store unknown keys
+	Comment         string // Section Comment
+	systemd.KeyComments
+
 	// Configures the parent Queueing Discipline (qdisc). Takes one of "root", "clsact", "ingress" or a class identifier. The class identifier is specified as the major and minor numbers in hexadecimal in the range 0x1–Oxffff separated with a colon ("major:minor"). Defaults to "root".
 	Parent string `systemd:",omitempty"`
 
@@ -1248,6 +1420,10 @@ type HierarchyTokenBucketSection struct {
 
 // The [HierarchyTokenBucketClass] section manages the traffic control class of hierarchy token bucket (htb).
 type HierarchyTokenBucketClassSection struct {
+	systemd.KeyList        // KeyList to store unknown keys
+	Comment         string // Section Comment
+	systemd.KeyComments
+
 	// Configures the parent Queueing Discipline (qdisc). Takes one of "root", or a qdisc identifier. The qdisc identifier is specified as the major and minor numbers in hexadecimal in the range 0x1–Oxffff separated with a colon ("major:minor"). Defaults to "root".
 	Parent string `systemd:",omitempty"`
 
@@ -1281,6 +1457,10 @@ type HierarchyTokenBucketClassSection struct {
 
 // The [HeavyHitterFilter] section manages the queueing discipline (qdisc) of Heavy Hitter Filter (hhf).
 type HeavyHitterFilterSection struct {
+	systemd.KeyList        // KeyList to store unknown keys
+	Comment         string // Section Comment
+	systemd.KeyComments
+
 	// Configures the parent Queueing Discipline (qdisc). Takes one of "root", "clsact", "ingress" or a class identifier. The class identifier is specified as the major and minor numbers in hexadecimal in the range 0x1–Oxffff separated with a colon ("major:minor"). Defaults to "root".
 	Parent string `systemd:",omitempty"`
 
@@ -1293,6 +1473,10 @@ type HeavyHitterFilterSection struct {
 
 // The [QuickFairQueueing] section manages the queueing discipline (qdisc) of Quick Fair Queueing (QFQ).
 type QuickFairQueueingSection struct {
+	systemd.KeyList        // KeyList to store unknown keys
+	Comment         string // Section Comment
+	systemd.KeyComments
+
 	// Configures the parent Queueing Discipline (qdisc). Takes one of "root", "clsact", "ingress" or a class identifier. The class identifier is specified as the major and minor numbers in hexadecimal in the range 0x1–Oxffff separated with a colon ("major:minor"). Defaults to "root".
 	Parent string `systemd:",omitempty"`
 
@@ -1302,6 +1486,10 @@ type QuickFairQueueingSection struct {
 
 // The [QuickFairQueueingClass] section manages the traffic control class of Quick Fair Queueing (qfq).
 type QuickFairQueueingClassSection struct {
+	systemd.KeyList        // KeyList to store unknown keys
+	Comment         string // Section Comment
+	systemd.KeyComments
+
 	// Configures the parent Queueing Discipline (qdisc). Takes one of "root", or a qdisc identifier. The qdisc identifier is specified as the major and minor numbers in hexadecimal in the range 0x1–Oxffff separated with a colon ("major:minor"). Defaults to "root".
 	Parent string `systemd:",omitempty"`
 
@@ -1317,6 +1505,10 @@ type QuickFairQueueingClassSection struct {
 
 // The [BridgeVLAN] section manages the VLAN ID configuration of a bridge port and accepts the following keys. Specify several [BridgeVLAN] sections to configure several VLAN entries. The VLANFiltering= option has to be enabled, see the [Bridge] section in systemd.netdev(5).
 type BridgeVLANSection struct {
+	systemd.KeyList        // KeyList to store unknown keys
+	Comment         string // Section Comment
+	systemd.KeyComments
+
 	// The VLAN ID allowed on the port. This can be either a single ID or a range M-N. VLAN IDs are valid from 1 to 4094.
 	VLAN string `systemd:",omitempty"`
 
