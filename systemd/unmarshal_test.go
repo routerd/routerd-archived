@@ -44,7 +44,8 @@ type networkSection struct {
 type routeSection struct {
 	KeyList
 	Gateway     string
-	Destination string `systemd:",omitempty"`
+	Destination string  `systemd:",omitempty"`
+	Source      *string `systemd:",omitempty"`
 }
 
 func TestUnmarshal(t *testing.T) {
@@ -68,6 +69,7 @@ Destination=10.10.20.1/24
 [Route]
 Gateway=10.10.10.1/24
 UndefinedKey=something
+Source=something
 
 [Whatever]
 `), f)
@@ -95,6 +97,7 @@ UndefinedKey=something
 			},
 			{
 				Gateway: "10.10.10.1/24",
+				Source:  StringPtr("something"),
 				KeyList: KeyList{
 					{Name: "UndefinedKey", Value: "something"},
 				},

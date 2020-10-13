@@ -126,6 +126,20 @@ func unmarshalKeys(section *Section, rv reflect.Value) error {
 			field.SetString(key.Value)
 			comment = key.Comment
 
+		case reflect.Ptr:
+			if field.Type().Elem().Kind() != reflect.String {
+				continue
+			}
+			key := keys[len(keys)-1]
+			if key.Value == "" && fieldConfig.Omitempty {
+				// skip empty
+				continue
+			}
+
+			stringRV := reflect.New(field.Type().Elem())
+			stringRV.Elem().SetString(key.Value)
+			field.Set(stringRV)
+
 		case reflect.Slice:
 			if field.Type().Elem().Kind() != reflect.String {
 				// wrong key type
@@ -134,11 +148,16 @@ func unmarshalKeys(section *Section, rv reflect.Value) error {
 
 			var values []string
 			for _, key := range keys {
-				values = append(values, key.Value)
 				if comment != "" {
 					comment += "\n"
 				}
 				comment += key.Comment
+
+				if key.Value == "" && fieldConfig.Omitempty {
+					// skip empty keys with omitempty
+					continue
+				}
+				values = append(values, key.Value)
 			}
 			field.Set(reflect.ValueOf(values))
 		}

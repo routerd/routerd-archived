@@ -47,6 +47,7 @@ func TestMarshal(t *testing.T) {
 			},
 			{
 				Gateway: "10.10.10.1/24",
+				Source:  StringPtr("something"),
 				KeyList: KeyList{
 					{Name: "UndefinedKey", Value: "something"},
 				},
@@ -76,9 +77,9 @@ Destination=10.10.20.1/24
 
 [Route]
 Gateway=10.10.10.1/24
+Source=something
 UndefinedKey=something
 
 [Whatever]
 `, string(b))
-	t.Fail()
 }

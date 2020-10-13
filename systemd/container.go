@@ -39,14 +39,27 @@ func (c *KeyComments) RemoveKeyComment(key string) {
 	}
 }
 
+// SectionList is storing arbitrary sections.
+// When embedded into a struct that is given to Unmarshal,
+// sections that cannot be assigned to a field are
+// appended to this SectionList
 type SectionList []Section
 
 func (l *SectionList) AddSection(s Section) {
 	*l = append(*l, s)
 }
 
+// KeyList is storing arbitrary key.
+// When embedded into a struct that is given to Unmarshal,
+// keys that cannot be assigned to a field are
+// appended to this KeyList
 type KeyList []Key
 
 func (l *KeyList) AddKey(k Key) {
 	*l = append(*l, k)
+}
+
+// Returns a pointer to the given string.
+func StringPtr(str string) *string {
+	return &str
 }

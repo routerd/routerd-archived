@@ -108,12 +108,13 @@ func marshalSection(section *Section, rv reflect.Value) {
 				Name:    fieldConfig.Name,
 				Comment: keyComment(rv, fieldConfig.Name),
 			}
+			if field.IsNil() && fieldConfig.Omitempty {
+				continue
+			}
 			if !field.IsNil() {
 				key.Value = field.Elem().String()
 			}
-			if key.Value == "" && fieldConfig.Omitempty {
-				continue
-			}
+			section.Keys = append(section.Keys, key)
 
 		case reflect.String:
 			key := Key{
@@ -124,7 +125,6 @@ func marshalSection(section *Section, rv reflect.Value) {
 			if key.Value == "" && fieldConfig.Omitempty {
 				continue
 			}
-
 			section.Keys = append(section.Keys, key)
 
 		case reflect.Slice:
