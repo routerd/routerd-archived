@@ -58,8 +58,3 @@ type KeyList []Key
 func (l *KeyList) AddKey(k Key) {
 	*l = append(*l, k)
 }
-
-// Returns a pointer to the given string.
-func StringPtr(str string) *string {
-	return &str
-}

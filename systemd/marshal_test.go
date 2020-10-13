@@ -44,6 +44,7 @@ func TestMarshal(t *testing.T) {
 			{
 				Gateway:     "10.10.10.1/24",
 				Destination: "10.10.20.1/24",
+				Enable:      BoolPtr(true),
 			},
 			{
 				Gateway: "10.10.10.1/24",
@@ -74,10 +75,13 @@ Address=10.10.10.3/24
 [Route]
 Gateway=10.10.10.1/24
 Destination=10.10.20.1/24
+Enable=yes
+Disable=
 
 [Route]
 Gateway=10.10.10.1/24
 Source=something
+Disable=
 UndefinedKey=something
 
 [Whatever]

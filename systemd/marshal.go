@@ -41,6 +41,9 @@ func Marshal(v interface{}) ([]byte, error) {
 		fieldConfig := configForField(structField)
 		switch field.Type().Kind() {
 		case reflect.Ptr:
+			if field.IsNil() {
+				continue
+			}
 			section := Section{
 				Name: fieldConfig.Name,
 			}
@@ -101,18 +104,27 @@ func marshalSection(section *Section, rv reflect.Value) {
 		fieldConfig := configForField(tv.Field(i))
 		switch structField.Type.Kind() {
 		case reflect.Ptr:
-			if structField.Type.Elem().Kind() != reflect.String {
+			if field.IsNil() && fieldConfig.Omitempty {
 				continue
 			}
 			key := Key{
 				Name:    fieldConfig.Name,
 				Comment: keyComment(rv, fieldConfig.Name),
 			}
-			if field.IsNil() && fieldConfig.Omitempty {
+
+			switch structField.Type.Elem().Kind() {
+			case reflect.String:
+				if !field.IsNil() {
+					key.Value = field.Elem().String()
+				}
+
+			case reflect.Bool:
+				if !field.IsNil() {
+					key.Value = BoolToStr(field.Elem().Bool())
+				}
+
+			default:
 				continue
-			}
-			if !field.IsNil() {
-				key.Value = field.Elem().String()
 			}
 			section.Keys = append(section.Keys, key)
 

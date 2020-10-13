@@ -127,18 +127,38 @@ func unmarshalKeys(section *Section, rv reflect.Value) error {
 			comment = key.Comment
 
 		case reflect.Ptr:
-			if field.Type().Elem().Kind() != reflect.String {
-				continue
-			}
-			key := keys[len(keys)-1]
-			if key.Value == "" && fieldConfig.Omitempty {
-				// skip empty
-				continue
-			}
+			switch field.Type().Elem().Kind() {
+			case reflect.Bool:
+				key := keys[len(keys)-1]
+				if key.Value == "" && fieldConfig.Omitempty {
+					// skip empty
+					continue
+				}
 
-			stringRV := reflect.New(field.Type().Elem())
-			stringRV.Elem().SetString(key.Value)
-			field.Set(stringRV)
+				b := StrToBool(key.Value)
+				if b == nil {
+					// TODO: warning?
+					continue
+				}
+
+				boolRV := reflect.New(field.Type().Elem())
+				boolRV.Elem().SetBool(*b)
+				field.Set(boolRV)
+
+			case reflect.String:
+				key := keys[len(keys)-1]
+				if key.Value == "" && fieldConfig.Omitempty {
+					// skip empty
+					continue
+				}
+
+				stringRV := reflect.New(field.Type().Elem())
+				stringRV.Elem().SetString(key.Value)
+				field.Set(stringRV)
+
+			default:
+				continue
+			}
 
 		case reflect.Slice:
 			if field.Type().Elem().Kind() != reflect.String {

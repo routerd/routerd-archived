@@ -46,6 +46,8 @@ type routeSection struct {
 	Gateway     string
 	Destination string  `systemd:",omitempty"`
 	Source      *string `systemd:",omitempty"`
+	Enable      *bool   `systemd:",omitempty"`
+	Disable     *bool
 }
 
 func TestUnmarshal(t *testing.T) {
@@ -65,6 +67,8 @@ Address=10.10.10.3/24
 Gateway=10.10.10.1/24
 # comment for dest key
 Destination=10.10.20.1/24
+Enable=yes
+Disable=off
 
 [Route]
 Gateway=10.10.10.1/24
@@ -94,6 +98,8 @@ Source=something
 			{
 				Gateway:     "10.10.10.1/24",
 				Destination: "10.10.20.1/24",
+				Enable:      BoolPtr(true),
+				Disable:     BoolPtr(false),
 			},
 			{
 				Gateway: "10.10.10.1/24",
