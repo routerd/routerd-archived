@@ -50,7 +50,6 @@ func unmarshalSections(file *File, rv reflect.Value) error {
 		sections := file.SectionsByName(fieldConfig.Name)
 		if len(sections) == 0 {
 			// no section with this name
-			// TODO load into "catch all property"
 			continue
 		}
 
